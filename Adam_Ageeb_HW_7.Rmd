@@ -1,0 +1,211 @@
+---
+title: "Adam_Ageeb_HW_7"
+author: "Adam Ageeb"
+date: "2025-04-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Adam Ageeb
+## ara4629
+### GitHub Link: 
+
+### Problem 1
+
+#### Part A
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(readr)
+library(tidyverse)
+armfold <- read_csv("/Users/adamageeb/Documents/SDS 315/HW7/armfold.csv")
+table(armfold$Sex)
+prop_male_left <- armfold |>
+  filter(Sex == "Male") |>
+  summarise(proportion = mean(LonR_fold == 1))|>
+  pull(proportion)
+prop_female_left <- armfold |>
+  filter(Sex == "Female") |>
+  summarise(proportion = mean(LonR_fold == 1))|>
+  pull(proportion)
+```
+
+There are 106 Males and 111 Females in the data set.
+The sample proportion of males who folded their left arm on top is 0.4717.
+The sample proportion of females who folded their left arm on top is 0.4234.
+
+#### Part B
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+observed_difference <- prop_male_left - prop_female_left
+```
+
+The obersved diffrence in proportions is 0.0483.
+
+#### Part C
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+table_data <- table(armfold$Sex, armfold$LonR_fold)
+prop_test <- prop.test(x = c(50, 47),
+                       n = c(106, 111),
+                       correct = FALSE)
+prop_test
+
+SE <- sqrt((0.4717*(1-0.4717)/106) + (0.4234*(1-0.4234)/111))
+lower_bound <- observed_difference - 1.96*SE
+upper_bound <- observed_difference + 1.96*SE
+
+```
+
+The 95% confidence interval has a lower bound of -0.0839 and an upper bound of 0.1805 with a standard error of 0.0675. I used a z-score of 1.96 to correlate to a confidence level fo 95%.
+
+
+#### Part D
+
+If we were to repeat this study many times, then we would expect that about 95% of the resulting confidence intervals would contain the true difference in proportions between males and females folding their arms with the left arm on top.
+
+
+#### Part E
+
+The standard error measures how much the sample difference in proportions (male - female) is expected to vary from sample to sample. It reflects the variability due to sampling randomness.
+
+
+#### Part F
+
+In this context, the sampling distribution refers to the distribution of the difference in sample proportions (male - female) we would obtain if we repeatedly sampled groups of students from the population. The proportions within each sample vary, but the true population proportions stay fixed.
+
+
+#### Part G
+
+The Central Limit Theorem justifies using a normal approximation here. It states that, given a large enough sample size, the sampling distribution of the sample proportion (or difference of proportions) will be approximately normal, regardless of the original distribution.
+
+
+#### Part H
+
+Since the confidence interval includes zero, we cannot rule out the possibility that there is no difference in the population proportions. However, the upper bound being as high as 0.30 suggests a potentially large difference that we can’t ignore either. So we’d say: "There might be a difference, but it’s not statistically significant at the 95% confidence level."
+
+
+#### Part I
+
+Yes, the confidence interval would vary from sample to sample because of sampling variability. However, 95% of those confidence intervals would contain the true population difference if we repeated the study many times.
+
+
+
+### Probem 2
+
+#### Part A
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(readr)
+turnout <- read_csv("/Users/adamageeb/Documents/SDS 315/HW7/turnout.csv")
+prop_GOTV <- mean(turnout$voted1998[turnout$GOTV_call == 1])
+prop_no_GOTV <- mean(turnout$voted1998[turnout$GOTV_call == 0])
+table_data2 <- table(turnout$GOTV_call, turnout$voted1998)
+success_GOTV <- table_data2[2, 2]
+success_no_GOTV <- table_data2[1, 2] 
+total_GOTV <- sum(table_data2[2, ])
+total_no_GOTV <- sum(table_data2[1, ]) 
+prop_test2 <- prop.test(c(success_GOTV, success_no_GOTV), c(total_GOTV, total_no_GOTV))
+prop_test2
+```
+
+The sample proportion of those receiving a GOTV call who voted in 1998 is 0.6478. The sample proportion of those not receiving a GOTV call who voted in 1998 is 0.4442. The large-sample 95% confidence interval for the difference difference in these two proportions has a lower bound of 0.1411 and upper bound of 0.2659.
+
+
+#### Part B
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(dplyr)
+ggplot(turnout, aes(x = factor(voted1998), y = AGE)) +
+  geom_boxplot() +
+  facet_wrap(~voted1998) +
+  labs(title = "Distribution of Age Faceted by Voting in 1998", x = "Voted in 1998 (0 = No, 1 = Yes)", y = "Age") 
+mean_voted1998 <- mean(turnout$AGE[turnout$voted1998 == 1], na.rm = TRUE)
+mean_no_voted1998 <- mean(turnout$AGE[turnout$voted1998 == 0], na.rm = TRUE)
+t_test_voted1998 <- t.test(AGE ~ voted1998, data = turnout)
+t_test_voted1998
+ggplot(turnout, aes(x = factor(GOTV_call), y = AGE)) +
+  geom_boxplot() +
+  facet_wrap(~GOTV_call) +
+  labs(title = "Distribution of Age Faceted by GOTV Call", x = "Received GOTV Call (0 = No, 1 = Yes)", y = "Age")
+mean_GOTV <- mean(turnout$AGE[turnout$GOTV_call == 1], na.rm = TRUE)
+mean_no_GOTV <- mean(turnout$AGE[turnout$GOTV_call == 0], na.rm = TRUE)
+t_test_GOTV <- t.test(AGE ~ GOTV_call, data = turnout)
+t_test_GOTV
+
+table_voted1996_GOTV <- table(turnout$voted1996, turnout$GOTV_call)
+prop_voted1996_GOTV <- prop.table(table_voted1996_GOTV, margin = 1) 
+prop_voted1996_GOTV
+success_voted1996_GOTV <- table_voted1996_GOTV[2, 2]
+success_no_voted1996_GOTV <- table_voted1996_GOTV[1, 2]
+total_voted1996_GOTV <- sum(table_voted1996_GOTV[2, ])
+total_no_voted1996_GOTV <- sum(table_voted1996_GOTV[1, ])
+prop_test_voted1996_GOTV <- prop.test(c(success_voted1996_GOTV, success_no_voted1996_GOTV), c(total_voted1996_GOTV, total_no_voted1996_GOTV))
+prop_test_voted1996_GOTV
+
+table_voted1996_voted1998 <- table(turnout$voted1996, turnout$voted1998)
+prop_voted1996_voted1998 <- prop.table(table_voted1996_voted1998, margin = 1) 
+prop_voted1996_voted1998
+success_voted1996_voted1998 <- table_voted1996_voted1998[2, 2]  
+success_no_voted1996_voted1998 <- table_voted1996_voted1998[1, 2] 
+total_voted1996_voted1998 <- sum(table_voted1996_voted1998[2, ]) 
+total_no_voted1996_voted1998 <- sum(table_voted1996_voted1998[1, ])  
+prop_test_voted1996_voted1998 <- prop.test(c(success_voted1996_voted1998, success_no_voted1996_voted1998), c(total_voted1996_voted1998, total_no_voted1996_voted1998))
+prop_test_voted1996_voted1998
+
+table_MajorPTY_voted1998 <- table(turnout$MAJORPTY, turnout$voted1998)
+prop_MajorPTY_voted1998 <- prop.table(table_MajorPTY_voted1998, margin = 1) 
+prop_MajorPTY_voted1998
+success_MajorPTY_voted1998 <- table_MajorPTY_voted1998[2, 2]  
+success_no_MajorPTY_voted1998 <- table_MajorPTY_voted1998[1, 2]  
+total_MajorPTY_voted1998 <- sum(table_MajorPTY_voted1998[2, ])  
+total_no_MajorPTY_voted1998 <- sum(table_MajorPTY_voted1998[1, ])  
+prop_test_MajorPTY_voted1998 <- prop.test(c(success_MajorPTY_voted1998, success_no_MajorPTY_voted1998), c(total_MajorPTY_voted1998, total_no_MajorPTY_voted1998))
+prop_test_MajorPTY_voted1998
+
+table_MajorPTY_GOTV <- table(turnout$MAJORPTY, turnout$GOTV_call)
+prop_MajorPTY_GOTV <- prop.table(table_MajorPTY_GOTV, margin = 1)
+prop_MajorPTY_GOTV
+success_MajorPTY_GOTV <- table_MajorPTY_GOTV[2, 2]  
+success_no_MajorPTY_GOTV <- table_MajorPTY_GOTV[1, 2] 
+total_MajorPTY_GOTV <- sum(table_MajorPTY_GOTV[2, ])  
+total_no_MajorPTY_GOTV <- sum(table_MajorPTY_GOTV[1, ])  
+prop_test_MajorPTY_GOTV <- prop.test(c(success_MajorPTY_GOTV, success_no_MajorPTY_GOTV), c(total_MajorPTY_GOTV, total_no_MajorPTY_GOTV))
+prop_test_MajorPTY_GOTV
+
+```
+
+
+#### Part C
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(MatchIt)
+match_model <- matchit(GOTV_call ~ AGE + voted1996 + MAJORPTY, 
+                       data = turnout, 
+                       method = "nearest",   # Nearest neighbor matching
+                       ratio = 5)            # 1:5 matching ratio
+
+summary(match_model)
+
+matched_data <- match.data(match_model)
+
+summary_stats <- matched_data %>%
+  group_by(GOTV_call) %>%
+  summarise(
+    mean_voted1996 = mean(voted1996, na.rm = TRUE),
+    mean_AGE = mean(AGE, na.rm = TRUE),
+    mean_MajorPTY = mean(MAJORPTY, na.rm = TRUE)
+  )
+
+success_GOTV_matched <- sum(matched_data$voted1998[matched_data$GOTV_call == 1])
+success_no_GOTV_matched <- sum(matched_data$voted1998[matched_data$GOTV_call == 0])
+total_GOTV_matched <- sum(matched_data$GOTV_call == 1)
+total_no_GOTV_matched <- sum(matched_data$GOTV_call == 0)
+
+prop_GOTV_matched <- mean(matched_data$voted1998[matched_data$GOTV_call == 1])
+
+prop_no_GOTV_matched <- mean(matched_data$voted1998[matched_data$GOTV_call == 0])
+
+prop_test_result <- prop.test(c(success_GOTV_matched, success_no_GOTV_matched), c(total_GOTV_matched, total_no_GOTV_matched))
+
+prop_test_result
+```
+
+The sample proportion of those receiving a GOTV call who voted in 1998 is 0.6478. The sample proportion of those not receiving a GOTV call who voted in 1998 0.5692. A large-sample 95% confidence interval for the difference in these two proportions has a lower bound of 0.0105 and upper bound of 0.1466. The data strongly suggests that receiving a GOTV call increases the likelihood of voting in the 1998 election. The large difference in proportions, along with the confidence interval not including zero, provides strong evidence in favor of the GOTV call having a positive effect on voter turnout.
